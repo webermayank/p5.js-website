@@ -68,30 +68,38 @@ export const ReferenceDirectoryWithFilter = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const filteredEntries = useMemo(() => {
-    if (!searchKeyword) return categoryData;
+  if (!searchKeyword) return categoryData;
 
-    return categoryData.reduce((acc: FilteredCategoryData[], category) => {
-      const filteredSubcats = category.subcats.reduce(
-        (subAcc, subcat) => {
-          const filteredEntries = subcat.entries.filter((entry) =>
-            entry.data.title
-              .toLowerCase()
-              .includes(searchKeyword.toLowerCase()),
-          );
-          if (filteredEntries.length > 0) {
-            subAcc.push({ ...subcat, entries: filteredEntries });
-          }
-          return subAcc;
-        },
-        [] as typeof category.subcats,
+  return categoryData.reduce((acc: FilteredCategoryData[], category) => {
+    const filteredSubcats = category.subcats.reduce(
+      (subAcc: typeof category.subcats, subcat) => {
+      const filteredEntries = subcat.entries.filter((entry) =>
+        entry.data.title
+          .toLowerCase()
+          .includes(searchKeyword.toLowerCase()),
       );
-
-      if (filteredSubcats.length > 0) {
-        acc.push({ ...category, subcats: filteredSubcats });
+  
+      if (subcat.entry &&
+            subcat.entry.data.title
+            .toLowerCase()
+            .includes(searchKeyword.toLowerCase())
+      ) {
+        filteredEntries.push(subcat.entry);
       }
-      return acc;
+
+      if (filteredEntries.length > 0) {
+        subAcc.push({ ...subcat, entries: filteredEntries });
+      }
+
+      return subAcc;
     }, []);
-  }, [categoryData, searchKeyword]);
+
+    if (filteredSubcats.length > 0) {
+      acc.push({ ...category, subcats: filteredSubcats });
+    }
+    return acc;
+  },[]);
+}, [categoryData, searchKeyword]);
 
   const renderEntries = (entries: ReferenceDirectoryEntry[]) =>
     entries.length === 0 ? null : (
